@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use Exception;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 
@@ -74,17 +75,20 @@ class VendasController extends Controller
     public function dadosAnuais($ano){
         try{
             $dadosAnuais = DB::select("
-            SELECT  MONTH(PED.DATA_PEDIDO) AS month,
-                    MONTHNAME(PED.DATA_PEDIDO) AS mes,
+            SELECT MONTH(PED.DATA_PEDIDO) AS number_mes,
+                   MONTHNAME(PED.DATA_PEDIDO) AS mes,
                    format(SUM(VEN.TOTAL_VENDA),2,'de_DE') AS total
             FROM PEDIDOS PED
             INNER JOIN VENDAS VEN ON (VEN.NUMPEDIDO = PED.NUMPEDIDO)
             WHERE YEAR(PED.DATA_PEDIDO) = '$ano' AND PED.STATUS = 'F'
-            GROUP BY mes, month
-            ORDER BY month
-        ");
-            if(is_null($dadosAnuais)){
+            GROUP BY PED.data_pedido
+            ORDER BY number_mes;");
+            if(empty($dadosAnuais)){
                 return response()->json(["message"=>"Nenhum registro encontrado"]);
+            }
+            foreach($dadosAnuais as $value){
+                $carbon = Carbon::parse("0-$value->number_mes-0");
+                $value->mes = $carbon->getTranslatedMonthName('MMM');
             }
             return response()->json($dadosAnuais);
         }catch(Exception $e){

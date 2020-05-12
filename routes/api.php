@@ -13,6 +13,14 @@
 | is assigned the "api" middleware group. Enjoy building your API!
 |
 */
+
+/*AUTENTICAÇÃO */
+Route::post('auth/login', 'API\AuthController@login');
+Route::group(['middleware'=>['apiJwt']], function(){
+    Route::get('users', 'API\UserController@listar');
+    Route::post('auth/logout', 'API\AuthController@logout');
+
+});
 /* ROTAS RELACIONADAS A TABELA CLIENTES */
 Route::get('clientes/clientesAll', 'API\ClientesController@index');
 Route::get('clientes/list', 'API\ClientesController@list');
